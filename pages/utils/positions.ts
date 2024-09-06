@@ -1,7 +1,7 @@
 // 木の位置
 export const treePositions = [
   { x: 3, y: 2 },
-  { x: 5, y: 6 },
+  { x: 8, y: 8 },
 ];
 
 // 水の位置を範囲で指定

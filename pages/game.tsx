@@ -27,6 +27,9 @@ import {
   isTreePosition,
   isWaterPosition,
 } from "./utils/positions";
+
+import Tile from "./utils/tile";
+
 import Image from "next/image";
 
 const Game = () => {
@@ -105,7 +108,7 @@ const Game = () => {
   }, [isBattlePopupVisible, normalMusic, battleMusic]);
 
   const startRandomBattleSteps = () => {
-    const randomSteps = Math.floor(Math.random() * 6) + 3;
+    const randomSteps = Math.floor(Math.random() * 6) + 300;
     setNextBattleSteps(randomSteps);
     setSteps(0);
   };
@@ -229,33 +232,23 @@ const Game = () => {
                 boxSizing: "border-box",
               }}
             >
-              {isPlayer && (
-                <Image
-                  src={playerImages[direction][animationFrame]} // 向きとアニメーションフレームに応じて画像を切り替える
-                  width={100}
-                  height={100}
-                  alt="Player"
-                  style={{ width: "100%", height: "100%" }}
-                />
-              )}
-              {isTree && (
-                <Image
-                  src="/images/map/grass_frame_2.png"
-                  width={100} // 幅
-                  height={100}
-                  alt="Tree"
-                  style={{ width: "100%", height: "100%" }}
-                />
-              )}
-              {isWater && (
-                <Image
-                  src="/images/map/water_frame_4.png"
-                  width={100} // 幅
-                  height={100}
-                  alt="Water"
-                  style={{ width: "100%", height: "100%" }}
-                />
-              )}
+              <Tile
+                src={playerImages[direction][animationFrame]}
+                alt="Player"
+                isVisible={isPlayer}
+              />
+
+              <Tile
+                src="/images/map/water_frame_4.png"
+                alt="Water"
+                isVisible={isWater}
+              />
+
+              <Tile
+                src="/images/map/grass_frame_4.png"
+                alt="Tree"
+                isVisible={isTree}
+              />
             </div>
           );
         })}
