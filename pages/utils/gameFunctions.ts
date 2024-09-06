@@ -1,3 +1,26 @@
+import { Enemy } from "./types"; // 型定義をインポート
+import { playEnemyAttackSound } from "./audioManager"; // 音声管理ファイルをインポート
+
+export const enemyAttack = (
+  currentEnemy: Enemy | null,
+  setPlayerHp: React.Dispatch<React.SetStateAction<number>>,
+  setEnemyAttackMessage: React.Dispatch<React.SetStateAction<string>>,
+  setIsPlayerTurn: React.Dispatch<React.SetStateAction<boolean>>,
+  enemyAttackSound: HTMLAudioElement | null
+) => {
+  if (currentEnemy) {
+    const [minAttack, maxAttack] = currentEnemy.attackRange;
+    if (enemyAttackSound) {
+      playEnemyAttackSound(enemyAttackSound); // 敵の攻撃音を再生
+    }
+    const damage =
+      Math.floor(Math.random() * (maxAttack - minAttack + 1)) + minAttack;
+    setPlayerHp((prevHp) => Math.max(prevHp - damage, 0));
+    setEnemyAttackMessage(`${currentEnemy.name}による攻撃: ${damage} ダメージ`);
+    setIsPlayerTurn(true);
+  }
+};
+
 // 木や水があるかどうかをチェックする関数
 export const isTreePosition = (
   x: number,

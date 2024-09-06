@@ -6,6 +6,7 @@ import {
   isWaterPosition,
   handleUseHerb,
   attemptHerbDrop,
+  enemyAttack,
 } from "./utils/gameFunctions";
 
 import {
@@ -19,6 +20,7 @@ import {
 
 import { Enemy } from "./utils/types"; // 型定義をインポート
 import { enemies } from "./utils/enemies";
+import { playerImages } from "./utils/playerImages"; // playerImagesをインポート
 
 import Image from "next/image";
 
@@ -65,21 +67,6 @@ const Game = () => {
   const [direction, setDirection] = useState("down"); // プレイヤーの向き
   const [animationFrame, setAnimationFrame] = useState(0); // 画像を切り替えるためのフレーム
 
-  const playerImages = {
-    up: ["/images/player/player_up_1.png", "/images/player/player_up_2.png"],
-    down: [
-      "/images/player/player_down_1.png",
-      "/images/player/player_down_2.png",
-    ],
-    left: [
-      "/images/player/player_left_1.png",
-      "/images/player/player_left_2.png",
-    ],
-    right: [
-      "/images/player/player_right_1.png",
-      "/images/player/player_right_2.png",
-    ],
-  };
   useEffect(() => {
     if (typeof window !== "undefined") {
       // クライアントサイドでのみAudioを初期化
@@ -134,20 +121,15 @@ const Game = () => {
     setSteps(0);
   };
 
-  const enemyAttack = () => {
-    if (currentEnemy) {
-      const [minAttack, maxAttack] = currentEnemy.attackRange;
-      if (enemyAttackSound) {
-        playEnemyAttackSound(enemyAttackSound); // 敵の攻撃音を再生
-      }
-      const damage =
-        Math.floor(Math.random() * (maxAttack - minAttack + 1)) + minAttack;
-      setPlayerHp((prevHp) => Math.max(prevHp - damage, 0));
-      setEnemyAttackMessage(
-        `${currentEnemy.name}による攻撃: ${damage} ダメージ`
-      );
-      setIsPlayerTurn(true);
-    }
+  // 関数を使用
+  const handleEnemyAttack = () => {
+    enemyAttack(
+      currentEnemy,
+      setPlayerHp,
+      setEnemyAttackMessage,
+      setIsPlayerTurn,
+      enemyAttackSound
+    );
   };
 
   const handleAttack = () => {
@@ -173,7 +155,7 @@ const Game = () => {
         setCurrentEnemy({ ...currentEnemy, hp: newHp });
         setIsPlayerTurn(false);
         setTimeout(() => {
-          enemyAttack();
+          handleEnemyAttack();
         }, 1000);
       }
     }
