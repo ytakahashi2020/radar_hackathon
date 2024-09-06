@@ -252,7 +252,7 @@ const Game = () => {
               )}
               {isTree && (
                 <Image
-                  src="/images/tree.png"
+                  src="/images/map/grass_frame_2.png"
                   width={100} // 幅
                   height={100}
                   alt="Tree"
@@ -261,7 +261,7 @@ const Game = () => {
               )}
               {isWater && (
                 <Image
-                  src="/images/water.png"
+                  src="/images/map/water_frame_4.png"
                   width={100} // 幅
                   height={100}
                   alt="Water"
