@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import BattlePopup from "./components/BattlePopup";
 import VictoryPopup from "./components/VictoryPopup";
+import {
+  isTreePosition,
+  isWaterPosition,
+  useHerb,
+} from "./utils/gameFunctions";
 
 // 木と水を配置する位置
 const treePositions = [
@@ -18,33 +23,16 @@ for (let x = 0; x <= 20; x++) {
   }
 }
 
-// 木や水があるかどうかをチェックする関数
-const isTreePosition = (x: number, y: number) => {
-  return treePositions.some((pos) => pos.x === x && pos.y === y);
-};
-
-const isWaterPosition = (x: number, y: number) => {
-  return waterPositions.some((pos) => pos.x === x && pos.y === y);
-};
-
-// 敵データの型定義
-type Enemy = {
-  name: string;
-  image: string;
-  hp: number;
-  attackRange: [number, number];
-};
-
 const Game = () => {
   const [playerPosition, setPlayerPosition] = useState({ x: 0, y: 0 });
-  const [playerHp, setPlayerHp] = useState(50); // 主人公のHPを50に設定
+  const [playerHp, setPlayerHp] = useState(50);
   const [herbCount, setHerbCount] = useState(0); // やくそうの所持数
   const [isBattlePopupVisible, setIsBattlePopupVisible] = useState(false);
   const [steps, setSteps] = useState(0);
   const [nextBattleSteps, setNextBattleSteps] = useState(0);
   const [currentEnemy, setCurrentEnemy] = useState<Enemy | null>(null);
   const [isVictoryPopupVisible, setIsVictoryPopupVisible] = useState(false);
-  const [isPlayerTurn, setIsPlayerTurn] = useState(true); // プレイヤーのターンかどうか
+  const [isPlayerTurn, setIsPlayerTurn] = useState(true);
   const [enemyAttackMessage, setEnemyAttackMessage] = useState("");
   const [herbMessage, setHerbMessage] = useState(""); // やくそうを入手したメッセージ
 
@@ -69,6 +57,17 @@ const Game = () => {
     },
   ];
 
+  // やくそう入手の処理
+  const attemptHerbDrop = () => {
+    const herbDrop = Math.random() < 0.5; // 50%の確率でやくそうをドロップ
+    if (herbDrop) {
+      setHerbCount((prev) => prev + 1); // やくそうの数を増やす
+      setHerbMessage(`${currentEnemy?.name}はやくそうをおとした`);
+    } else {
+      setHerbMessage(""); // やくそうを入手しなかった場合はリセット
+    }
+  };
+
   const closePopup = () => {
     setIsBattlePopupVisible(false);
     startRandomBattleSteps();
@@ -80,32 +79,19 @@ const Game = () => {
     setSteps(0);
   };
 
-  // 敵の攻撃処理
   const enemyAttack = () => {
     if (currentEnemy) {
       const [minAttack, maxAttack] = currentEnemy.attackRange;
       const damage =
         Math.floor(Math.random() * (maxAttack - minAttack + 1)) + minAttack;
-      setPlayerHp((prevHp) => Math.max(prevHp - damage, 0)); // HPが0を下回らないようにする
+      setPlayerHp((prevHp) => Math.max(prevHp - damage, 0));
       setEnemyAttackMessage(
         `${currentEnemy.name}による攻撃: ${damage} ダメージ`
       );
-      setIsPlayerTurn(true); // プレイヤーのターンに戻す
+      setIsPlayerTurn(true);
     }
   };
 
-  // やくそう入手の処理
-  const attemptHerbDrop = () => {
-    const herbDrop = Math.random() < 0.8; // 50%の確率
-    if (herbDrop) {
-      setHerbCount((prev) => prev + 1);
-      setHerbMessage(`${currentEnemy?.name}はやくそうをおとした`);
-    } else {
-      setHerbMessage(""); // やくそうを入手しなかった場合はリセット
-    }
-  };
-
-  // プレイヤーの攻撃処理
   const handleAttack = () => {
     if (currentEnemy && isPlayerTurn) {
       const newHp = currentEnemy.hp - 6;
@@ -119,14 +105,14 @@ const Game = () => {
             setIsVictoryPopupVisible(false);
             setHerbMessage(""); // 勝利ポップアップが消える時にメッセージもリセット
             startRandomBattleSteps();
-          }, 2000); // 2秒後にポップアップを閉じる
+          }, 2000);
         }, 500);
       } else {
         setCurrentEnemy({ ...currentEnemy, hp: newHp });
-        setIsPlayerTurn(false); // プレイヤーの攻撃が終わったら敵のターンにする
+        setIsPlayerTurn(false);
         setTimeout(() => {
-          enemyAttack(); // 敵の攻撃
-        }, 1000); // 1秒後に敵が攻撃
+          enemyAttack();
+        }, 1000);
       }
     }
   };
@@ -141,32 +127,32 @@ const Game = () => {
         case "ArrowUp":
           if (
             prev.y > 0 &&
-            !isTreePosition(prev.x, prev.y - 1) &&
-            !isWaterPosition(prev.x, prev.y - 1)
+            !isTreePosition(prev.x, prev.y - 1, treePositions) &&
+            !isWaterPosition(prev.x, prev.y - 1, waterPositions)
           )
             newPos.y -= 1;
           break;
         case "ArrowDown":
           if (
             prev.y < 19 &&
-            !isTreePosition(prev.x, prev.y + 1) &&
-            !isWaterPosition(prev.x, prev.y + 1)
+            !isTreePosition(prev.x, prev.y + 1, treePositions) &&
+            !isWaterPosition(prev.x, prev.y + 1, waterPositions)
           )
             newPos.y += 1;
           break;
         case "ArrowLeft":
           if (
             prev.x > 0 &&
-            !isTreePosition(prev.x - 1, prev.y) &&
-            !isWaterPosition(prev.x - 1, prev.y)
+            !isTreePosition(prev.x - 1, prev.y, treePositions) &&
+            !isWaterPosition(prev.x - 1, prev.y, waterPositions)
           )
             newPos.x -= 1;
           break;
         case "ArrowRight":
           if (
             prev.x < 19 &&
-            !isTreePosition(prev.x + 1, prev.y) &&
-            !isWaterPosition(prev.x + 1, prev.y)
+            !isTreePosition(prev.x + 1, prev.y, treePositions) &&
+            !isWaterPosition(prev.x + 1, prev.y, waterPositions)
           )
             newPos.x += 1;
           break;
@@ -199,26 +185,15 @@ const Game = () => {
       const randomEnemy = enemies[Math.floor(Math.random() * enemies.length)];
       setCurrentEnemy(randomEnemy);
       setIsBattlePopupVisible(true);
-      setIsPlayerTurn(true); // 戦闘開始時はプレイヤーのターン
-      setEnemyAttackMessage(""); // 敵の攻撃メッセージをリセット
+      setIsPlayerTurn(true);
+      setEnemyAttackMessage("");
     }
   }, [steps, nextBattleSteps]);
-
-  // やくそうを使う処理
-  const useHerb = () => {
-    if (herbCount > 0 && playerHp < 50) {
-      const healAmount = Math.floor(Math.random() * 11) + 20; // 20~30回復
-      setPlayerHp((prevHp) => Math.min(prevHp + healAmount, 50)); // HPが50を超えないようにする
-      setHerbCount((prev) => prev - 1); // やくそうの数を減らす
-      setEnemyAttackMessage(`やくそうを使ってHPが${healAmount}回復した！`);
-    }
-  };
 
   return (
     <div style={{ textAlign: "center" }}>
       <h1>簡単なフィールドでの移動</h1>
 
-      {/* プレイヤーのHPとやくそう表示 */}
       <div style={{ marginBottom: "20px" }}>
         <h2>主人公のHP: {playerHp}</h2>
         <h2>やくそう: {herbCount}個</h2>
@@ -236,21 +211,20 @@ const Game = () => {
           const x = index % 20;
           const y = Math.floor(index / 20);
           const isPlayer = playerPosition.x === x && playerPosition.y === y;
-          const isTree = isTreePosition(x, y);
-          const isWater = isWaterPosition(x, y);
+          const isTree = isTreePosition(x, y, treePositions);
+          const isWater = isWaterPosition(x, y, waterPositions);
 
           return (
             <div
               key={index}
               style={{
-                width: 32, // マス目のサイズを小さく
-                height: 32, // マス目のサイズを小さく
+                width: 32,
+                height: 32,
                 backgroundColor: isPlayer ? "blue" : "green",
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                // border: "1px solid black", // 境界線を設定して隙間を無くす
-                boxSizing: "border-box", // 隙間を完全に無くす
+                boxSizing: "border-box",
               }}
             >
               {isPlayer && <span style={{ color: "white" }}>P</span>}
@@ -261,7 +235,6 @@ const Game = () => {
                   style={{ width: "100%", height: "100%" }}
                 />
               )}
-
               {isWater && (
                 <img
                   src="/images/water.png"
@@ -281,9 +254,17 @@ const Game = () => {
           isPlayerTurn={isPlayerTurn}
           onAttack={handleAttack}
           enemyAttackMessage={enemyAttackMessage}
-          herbCount={herbCount} // やくそうの数を渡す
-          onUseHerb={useHerb} // やくそうを使う処理を渡す
-          playerHp={playerHp} // プレイヤーのHPを渡す
+          herbCount={herbCount}
+          onUseHerb={() =>
+            useHerb(
+              herbCount,
+              playerHp,
+              setPlayerHp,
+              setHerbCount,
+              setEnemyAttackMessage
+            )
+          }
+          playerHp={playerHp}
         />
       )}
 
