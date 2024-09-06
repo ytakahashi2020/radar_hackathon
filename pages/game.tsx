@@ -5,6 +5,7 @@ import {
   isTreePosition,
   isWaterPosition,
   handleUseHerb,
+  attemptHerbDrop,
 } from "./utils/gameFunctions";
 import Image from "next/image";
 
@@ -67,17 +68,6 @@ const Game = () => {
     attackRange: [number, number];
   };
 
-  // やくそう入手の処理
-  const attemptHerbDrop = () => {
-    const herbDrop = Math.random() < 0.5; // 50%の確率でやくそうをドロップ
-    if (herbDrop) {
-      setHerbCount((prev) => prev + 1); // やくそうの数を増やす
-      setHerbMessage(`${currentEnemy?.name}はやくそうをおとした`);
-    } else {
-      setHerbMessage(""); // やくそうを入手しなかった場合はリセット
-    }
-  };
-
   const closePopup = () => {
     setIsBattlePopupVisible(false);
     startRandomBattleSteps();
@@ -108,7 +98,7 @@ const Game = () => {
       if (newHp <= 0) {
         setCurrentEnemy({ ...currentEnemy, hp: 0 });
         setTimeout(() => {
-          attemptHerbDrop(); // やくそう入手の処理
+          attemptHerbDrop(currentEnemy, setHerbCount, setHerbMessage);
           setIsBattlePopupVisible(false);
           setIsVictoryPopupVisible(true);
           setTimeout(() => {

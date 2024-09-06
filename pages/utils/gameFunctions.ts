@@ -32,3 +32,18 @@ export const handleUseHerb = (
     setEnemyAttackMessage(`やくそうを使ってHPが${healAmount}回復した！`);
   }
 };
+
+// やくそう入手の処理
+export const attemptHerbDrop = (
+  currentEnemy: { name: string } | null,
+  setHerbCount: (count: number | ((prev: number) => number)) => void,
+  setHerbMessage: (message: string) => void
+) => {
+  const herbDrop = Math.random() < 0.5; // 50%の確率でやくそうをドロップ
+  if (herbDrop) {
+    setHerbCount((prev) => prev + 1); // やくそうの数を増やす
+    setHerbMessage(`${currentEnemy?.name}はやくそうをおとした`);
+  } else {
+    setHerbMessage(""); // やくそうを入手しなかった場合はリセット
+  }
+};
