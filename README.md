@@ -52,3 +52,7 @@ https://www.springin.org/sound-stock/category/staging/page/2/
 herbSound
 回復魔法１
 https://soundeffect-lab.info/sound/battle/
+
+enemyAttack
+ドラゴンの鳴き声２
+https://soundeffect-lab.info/sound/battle/

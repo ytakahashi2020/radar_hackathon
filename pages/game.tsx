@@ -7,6 +7,18 @@ import {
   handleUseHerb,
   attemptHerbDrop,
 } from "./utils/gameFunctions";
+
+import {
+  initializeAudio,
+  playNormalMusic,
+  stopNormalMusic,
+  playBattleMusic,
+  stopBattleMusic,
+  playEnemyAttackSound,
+} from "./utils/audioManager"; // 音声管理ファイルをインポート
+
+import { Enemy } from "./utils/types"; // 型定義をインポート
+
 import Image from "next/image";
 
 // 木と水を配置する位置
@@ -46,6 +58,9 @@ const Game = () => {
   const [victorySound, setVictorySound] = useState<HTMLAudioElement | null>(
     null
   ); // 勝利時の音
+  const [enemyAttackSound, setEnemyAttackSound] =
+    useState<HTMLAudioElement | null>(null); // 敵の攻撃音
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       // クライアントサイドでのみAudioを初期化
@@ -54,54 +69,35 @@ const Game = () => {
       setSwordSound(new Audio("/sounds/sword.mp3"));
       setHerbSound(new Audio("/sounds/herbSound.mp3")); // やくそう使用時の音を初期化
       setVictorySound(new Audio("/sounds/victorySound.mp3")); // 勝利時の音を初期化
+      setEnemyAttackSound(new Audio("/sounds/enemyAttack.mp3"));
     }
   }, []);
 
   // 通常音楽の再生を開始
   useEffect(() => {
-    if (normalMusic) {
-      normalMusic.loop = true; // 音楽をループ
-      normalMusic.volume = 0.4;
-      normalMusic
-        .play()
-        .catch((err) => console.error("Error playing normal music:", err)); // エラーキャッチ
-    }
+    playNormalMusic(normalMusic);
     return () => {
-      if (normalMusic) {
-        normalMusic.pause(); // コンポーネントのクリーンアップ時に音楽を停止
-      }
+      stopNormalMusic(normalMusic); // クリーンアップ
     };
   }, [normalMusic]);
 
   // 戦闘が始まるときに音楽を切り替え
   useEffect(() => {
     if (isBattlePopupVisible) {
-      if (normalMusic) normalMusic.pause(); // 通常の音楽を停止
-      if (battleMusic) {
-        battleMusic.loop = true; // 戦闘音楽をループ
-        battleMusic.volume = 0.3;
-        battleMusic
-          .play()
-          .catch((err) => console.error("Error playing battle music:", err)); // エラーキャッチ
-      }
+      stopNormalMusic(normalMusic); // 通常の音楽を停止
+      playBattleMusic(battleMusic); // 戦闘音楽を再生
     } else {
-      if (battleMusic) {
-        battleMusic.pause(); // 戦闘音楽を停止
-      }
+      stopBattleMusic(battleMusic); // 戦闘音楽を停止
 
       // 2秒の遅延を追加して通常の音楽を再開
       setTimeout(() => {
-        if (normalMusic) {
-          normalMusic
-            .play()
-            .catch((err) => console.error("Error playing normal music:", err)); // エラーキャッチ
-        }
-      }, 2000); // 2秒の遅延// エラーキャッチ
+        playNormalMusic(normalMusic); // 通常音楽を再生
+      }, 2000);
     }
 
     return () => {
-      if (battleMusic) battleMusic.pause(); // コンポーネント終了時に戦闘音楽を停止
-      if (normalMusic) normalMusic.pause(); // 通常音楽も停止
+      stopBattleMusic(battleMusic); // コンポーネント終了時に戦闘音楽を停止
+      stopNormalMusic(normalMusic); // 通常音楽も停止
     };
   }, [isBattlePopupVisible, normalMusic, battleMusic]);
 
@@ -128,12 +124,6 @@ const Game = () => {
     ],
     []
   );
-  type Enemy = {
-    name: string;
-    image: string;
-    hp: number;
-    attackRange: [number, number];
-  };
 
   const closePopup = () => {
     setIsBattlePopupVisible(false);
@@ -149,6 +139,9 @@ const Game = () => {
   const enemyAttack = () => {
     if (currentEnemy) {
       const [minAttack, maxAttack] = currentEnemy.attackRange;
+      if (enemyAttackSound) {
+        playEnemyAttackSound(enemyAttackSound); // 敵の攻撃音を再生
+      }
       const damage =
         Math.floor(Math.random() * (maxAttack - minAttack + 1)) + minAttack;
       setPlayerHp((prevHp) => Math.max(prevHp - damage, 0));
