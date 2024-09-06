@@ -1,6 +1,73 @@
 import { Enemy } from "./types"; // 型定義をインポート
 import { playEnemyAttackSound } from "./audioManager"; // 音声管理ファイルをインポート
 
+export const handleKeyPress = (
+  e: KeyboardEvent,
+  playerPosition: { x: number; y: number },
+  setPlayerPosition: React.Dispatch<
+    React.SetStateAction<{ x: number; y: number }>
+  >,
+  setDirection: React.Dispatch<React.SetStateAction<string>>,
+  treePositions: Array<{ x: number; y: number }>,
+  waterPositions: Array<{ x: number; y: number }>,
+  setSteps: React.Dispatch<React.SetStateAction<number>>,
+  isBattlePopupVisible: boolean
+) => {
+  if (isBattlePopupVisible) return;
+
+  setPlayerPosition((prev) => {
+    let newPos = { ...prev };
+
+    switch (e.key) {
+      case "ArrowUp":
+        if (
+          prev.y > 0 &&
+          !isTreePosition(prev.x, prev.y - 1, treePositions) &&
+          !isWaterPosition(prev.x, prev.y - 1, waterPositions)
+        ) {
+          newPos.y -= 1;
+          setDirection("up"); // 上向きに変更
+        }
+        break;
+      case "ArrowDown":
+        if (
+          prev.y < 19 &&
+          !isTreePosition(prev.x, prev.y + 1, treePositions) &&
+          !isWaterPosition(prev.x, prev.y + 1, waterPositions)
+        ) {
+          newPos.y += 1;
+          setDirection("down"); // 下向きに変更
+        }
+        break;
+      case "ArrowLeft":
+        if (
+          prev.x > 0 &&
+          !isTreePosition(prev.x - 1, prev.y, treePositions) &&
+          !isWaterPosition(prev.x - 1, prev.y, waterPositions)
+        ) {
+          newPos.x -= 1;
+          setDirection("left"); // 左向きに変更
+        }
+        break;
+      case "ArrowRight":
+        if (
+          prev.x < 19 &&
+          !isTreePosition(prev.x + 1, prev.y, treePositions) &&
+          !isWaterPosition(prev.x + 1, prev.y, waterPositions)
+        ) {
+          newPos.x += 1;
+          setDirection("right"); // 右向きに変更
+        }
+        break;
+      default:
+        break;
+    }
+    return newPos;
+  });
+
+  setSteps((prevSteps) => prevSteps + 1);
+};
+
 export const enemyAttack = (
   currentEnemy: Enemy | null,
   setPlayerHp: React.Dispatch<React.SetStateAction<number>>,

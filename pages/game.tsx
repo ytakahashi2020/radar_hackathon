@@ -7,6 +7,7 @@ import {
   handleUseHerb,
   attemptHerbDrop,
   enemyAttack,
+  handleKeyPress,
 } from "./utils/gameFunctions";
 
 import {
@@ -161,75 +162,33 @@ const Game = () => {
     }
   };
 
-  const handleKeyPress = useCallback(
+  // useCallbackの中で関数を呼び出す
+  const handleKeyPressCallback = useCallback(
     (e: KeyboardEvent) => {
-      if (isBattlePopupVisible) return;
-
-      setPlayerPosition((prev) => {
-        let newPos = { ...prev };
-
-        switch (e.key) {
-          case "ArrowUp":
-            if (
-              prev.y > 0 &&
-              !isTreePosition(prev.x, prev.y - 1, treePositions) &&
-              !isWaterPosition(prev.x, prev.y - 1, waterPositions)
-            ) {
-              newPos.y -= 1;
-              setDirection("up"); // 上向きに変更
-            }
-            break;
-          case "ArrowDown":
-            if (
-              prev.y < 19 &&
-              !isTreePosition(prev.x, prev.y + 1, treePositions) &&
-              !isWaterPosition(prev.x, prev.y + 1, waterPositions)
-            ) {
-              newPos.y += 1;
-              setDirection("down"); // 下向きに変更
-            }
-            break;
-          case "ArrowLeft":
-            if (
-              prev.x > 0 &&
-              !isTreePosition(prev.x - 1, prev.y, treePositions) &&
-              !isWaterPosition(prev.x - 1, prev.y, waterPositions)
-            ) {
-              newPos.x -= 1;
-              setDirection("left"); // 左向きに変更
-            }
-            break;
-          case "ArrowRight":
-            if (
-              prev.x < 19 &&
-              !isTreePosition(prev.x + 1, prev.y, treePositions) &&
-              !isWaterPosition(prev.x + 1, prev.y, waterPositions)
-            ) {
-              newPos.x += 1;
-              setDirection("right"); // 右向きに変更
-            }
-            break;
-          default:
-            break;
-        }
-        return newPos;
-      });
-
-      setSteps((prevSteps) => prevSteps + 1);
+      handleKeyPress(
+        e,
+        playerPosition,
+        setPlayerPosition,
+        setDirection,
+        treePositions,
+        waterPositions,
+        setSteps,
+        isBattlePopupVisible
+      );
     },
-    [isBattlePopupVisible]
+    [playerPosition, isBattlePopupVisible]
   );
 
   useEffect(() => {
     if (!isBattlePopupVisible) {
-      window.addEventListener("keydown", handleKeyPress);
+      window.addEventListener("keydown", handleKeyPressCallback);
     } else {
-      window.removeEventListener("keydown", handleKeyPress);
+      window.removeEventListener("keydown", handleKeyPressCallback);
     }
     return () => {
-      window.removeEventListener("keydown", handleKeyPress);
+      window.removeEventListener("keydown", handleKeyPressCallback);
     };
-  }, [isBattlePopupVisible, handleKeyPress]);
+  }, [isBattlePopupVisible, handleKeyPressCallback]);
 
   useEffect(() => {
     startRandomBattleSteps();
@@ -243,7 +202,7 @@ const Game = () => {
       setIsPlayerTurn(true);
       setEnemyAttackMessage("");
     }
-  }, [steps, nextBattleSteps, enemies]);
+  }, [steps, nextBattleSteps]);
 
   return (
     <div style={{ textAlign: "center" }}>
