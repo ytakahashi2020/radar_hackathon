@@ -18,6 +18,7 @@ import {
 } from "./utils/audioManager"; // 音声管理ファイルをインポート
 
 import { Enemy } from "./utils/types"; // 型定義をインポート
+import { enemies } from "./utils/enemies";
 
 import Image from "next/image";
 
@@ -100,35 +101,6 @@ const Game = () => {
       stopNormalMusic(normalMusic); // 通常音楽も停止
     };
   }, [isBattlePopupVisible, normalMusic, battleMusic]);
-
-  const enemies: Enemy[] = useMemo(
-    () => [
-      {
-        name: "enemy1",
-        image: "/images/enemy1.png",
-        hp: 10,
-        attackRange: [1, 3],
-      },
-      {
-        name: "enemy2",
-        image: "/images/enemy2.png",
-        hp: 15,
-        attackRange: [4, 6],
-      },
-      {
-        name: "enemy3",
-        image: "/images/enemy3.png",
-        hp: 20,
-        attackRange: [7, 9],
-      },
-    ],
-    []
-  );
-
-  const closePopup = () => {
-    setIsBattlePopupVisible(false);
-    startRandomBattleSteps();
-  };
 
   const startRandomBattleSteps = () => {
     const randomSteps = Math.floor(Math.random() * 6) + 3;
