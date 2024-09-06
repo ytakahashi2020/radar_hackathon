@@ -42,13 +42,18 @@ const Game = () => {
   const [normalMusic, setNormalMusic] = useState<HTMLAudioElement | null>(null);
   const [battleMusic, setBattleMusic] = useState<HTMLAudioElement | null>(null);
   const [swordSound, setSwordSound] = useState<HTMLAudioElement | null>(null);
-
+  const [herbSound, setHerbSound] = useState<HTMLAudioElement | null>(null); // やくそう使用時の音
+  const [victorySound, setVictorySound] = useState<HTMLAudioElement | null>(
+    null
+  ); // 勝利時の音
   useEffect(() => {
     if (typeof window !== "undefined") {
       // クライアントサイドでのみAudioを初期化
       setNormalMusic(new Audio("/music/normalMusic.mp3"));
       setBattleMusic(new Audio("/music/battleMusic.mp3"));
       setSwordSound(new Audio("/sounds/sword.mp3"));
+      setHerbSound(new Audio("/sounds/herbSound.mp3")); // やくそう使用時の音を初期化
+      setVictorySound(new Audio("/sounds/victorySound.mp3")); // 勝利時の音を初期化
     }
   }, []);
 
@@ -80,11 +85,18 @@ const Game = () => {
           .catch((err) => console.error("Error playing battle music:", err)); // エラーキャッチ
       }
     } else {
-      if (battleMusic) battleMusic.pause(); // 戦闘音楽を停止
-      if (normalMusic)
-        normalMusic
-          .play()
-          .catch((err) => console.error("Error playing normal music:", err)); // エラーキャッチ
+      if (battleMusic) {
+        battleMusic.pause(); // 戦闘音楽を停止
+      }
+
+      // 2秒の遅延を追加して通常の音楽を再開
+      setTimeout(() => {
+        if (normalMusic) {
+          normalMusic
+            .play()
+            .catch((err) => console.error("Error playing normal music:", err)); // エラーキャッチ
+        }
+      }, 2000); // 2秒の遅延// エラーキャッチ
     }
 
     return () => {
@@ -157,6 +169,7 @@ const Game = () => {
         setCurrentEnemy({ ...currentEnemy, hp: 0 });
         setTimeout(() => {
           attemptHerbDrop(currentEnemy, setHerbCount, setHerbMessage);
+          if (victorySound) victorySound.play();
           setIsBattlePopupVisible(false);
           setIsVictoryPopupVisible(true);
           setTimeout(() => {
@@ -326,7 +339,8 @@ const Game = () => {
               playerHp,
               setPlayerHp,
               setHerbCount,
-              setEnemyAttackMessage
+              setEnemyAttackMessage,
+              herbSound
             )
           } // useHerbは通常の関数として使用
           playerHp={playerHp}

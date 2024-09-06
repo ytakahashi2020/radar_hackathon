@@ -42,5 +42,13 @@ https://musmus.main.jp/music_img5.html
 「激しい・熱い・アッパー系音楽素材 (1/1 ページ)」
 
 Sword
-「剣で斬る３」
+「斬撃 3」
+https://www.springin.org/sound-stock/category/battle/
+
+victorySound
+ジャジャーン 3
+https://www.springin.org/sound-stock/category/staging/page/2/
+
+herbSound
+回復魔法１
 https://soundeffect-lab.info/sound/battle/
