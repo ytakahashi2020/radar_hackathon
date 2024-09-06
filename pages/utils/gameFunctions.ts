@@ -1,5 +1,6 @@
 import { Enemy } from "./types"; // 型定義をインポート
 import { playEnemyAttackSound } from "./audioManager"; // 音声管理ファイルをインポート
+import { isPassablePosition } from "./positions";
 
 export const handleKeyPress = (
   e: KeyboardEvent,
@@ -20,41 +21,25 @@ export const handleKeyPress = (
 
     switch (e.key) {
       case "ArrowUp":
-        if (
-          prev.y > 0 &&
-          !isTreePosition(prev.x, prev.y - 1, treePositions) &&
-          !isWaterPosition(prev.x, prev.y - 1, waterPositions)
-        ) {
+        if (prev.y > 0 && isPassablePosition(prev.x, prev.y - 1)) {
           newPos.y -= 1;
           setDirection("up"); // 上向きに変更
         }
         break;
       case "ArrowDown":
-        if (
-          prev.y < 19 &&
-          !isTreePosition(prev.x, prev.y + 1, treePositions) &&
-          !isWaterPosition(prev.x, prev.y + 1, waterPositions)
-        ) {
+        if (prev.y < 19 && isPassablePosition(prev.x, prev.y + 1)) {
           newPos.y += 1;
           setDirection("down"); // 下向きに変更
         }
         break;
       case "ArrowLeft":
-        if (
-          prev.x > 0 &&
-          !isTreePosition(prev.x - 1, prev.y, treePositions) &&
-          !isWaterPosition(prev.x - 1, prev.y, waterPositions)
-        ) {
+        if (prev.x > 0 && isPassablePosition(prev.x - 1, prev.y)) {
           newPos.x -= 1;
           setDirection("left"); // 左向きに変更
         }
         break;
       case "ArrowRight":
-        if (
-          prev.x < 19 &&
-          !isTreePosition(prev.x + 1, prev.y, treePositions) &&
-          !isWaterPosition(prev.x + 1, prev.y, waterPositions)
-        ) {
+        if (prev.x < 19 && isPassablePosition(prev.x + 1, prev.y)) {
           newPos.x += 1;
           setDirection("right"); // 右向きに変更
         }
@@ -86,23 +71,6 @@ export const enemyAttack = (
     setEnemyAttackMessage(`${currentEnemy.name}による攻撃: ${damage} ダメージ`);
     setIsPlayerTurn(true);
   }
-};
-
-// 木や水があるかどうかをチェックする関数
-export const isTreePosition = (
-  x: number,
-  y: number,
-  treePositions: { x: number; y: number }[]
-) => {
-  return treePositions.some((pos) => pos.x === x && pos.y === y);
-};
-
-export const isWaterPosition = (
-  x: number,
-  y: number,
-  waterPositions: { x: number; y: number }[]
-) => {
-  return waterPositions.some((pos) => pos.x === x && pos.y === y);
 };
 
 // やくそうを使う処理

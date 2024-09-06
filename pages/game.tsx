@@ -2,8 +2,6 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import BattlePopup from "./components/BattlePopup";
 import VictoryPopup from "./components/VictoryPopup";
 import {
-  isTreePosition,
-  isWaterPosition,
   handleUseHerb,
   attemptHerbDrop,
   enemyAttack,
@@ -22,24 +20,14 @@ import {
 import { Enemy } from "./utils/types"; // 型定義をインポート
 import { enemies } from "./utils/enemies";
 import { playerImages } from "./utils/playerImages"; // playerImagesをインポート
-
+import {
+  treePositions,
+  waterPositions,
+  grassPositions,
+  isTreePosition,
+  isWaterPosition,
+} from "./utils/positions";
 import Image from "next/image";
-
-// 木と水を配置する位置
-const treePositions = [
-  { x: 3, y: 2 },
-  { x: 5, y: 6 },
-];
-
-// 水の配置を範囲で指定する
-const waterPositions = [];
-
-// x: 1〜20, y: 17〜19 の範囲で水を配置
-for (let x = 0; x <= 20; x++) {
-  for (let y = 13; y <= 14; y++) {
-    waterPositions.push({ x, y });
-  }
-}
 
 const Game = () => {
   const [playerPosition, setPlayerPosition] = useState({ x: 0, y: 0 });
@@ -225,8 +213,8 @@ const Game = () => {
           const x = index % 20;
           const y = Math.floor(index / 20);
           const isPlayer = playerPosition.x === x && playerPosition.y === y;
-          const isTree = isTreePosition(x, y, treePositions);
-          const isWater = isWaterPosition(x, y, waterPositions);
+          const isTree = isTreePosition(x, y);
+          const isWater = isWaterPosition(x, y);
 
           return (
             <div
