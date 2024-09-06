@@ -38,6 +38,61 @@ const Game = () => {
   const [enemyAttackMessage, setEnemyAttackMessage] = useState("");
   const [herbMessage, setHerbMessage] = useState(""); // やくそうを入手したメッセージ
 
+  // 音楽ファイルのAudioオブジェクトをクライアントサイドで初期化
+  const [normalMusic, setNormalMusic] = useState<HTMLAudioElement | null>(null);
+  const [battleMusic, setBattleMusic] = useState<HTMLAudioElement | null>(null);
+  const [swordSound, setSwordSound] = useState<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      // クライアントサイドでのみAudioを初期化
+      setNormalMusic(new Audio("/music/normalMusic.mp3"));
+      setBattleMusic(new Audio("/music/battleMusic.mp3"));
+      setSwordSound(new Audio("/sounds/sword.mp3"));
+    }
+  }, []);
+
+  // 通常音楽の再生を開始
+  useEffect(() => {
+    if (normalMusic) {
+      normalMusic.loop = true; // 音楽をループ
+      normalMusic.volume = 0.4;
+      normalMusic
+        .play()
+        .catch((err) => console.error("Error playing normal music:", err)); // エラーキャッチ
+    }
+    return () => {
+      if (normalMusic) {
+        normalMusic.pause(); // コンポーネントのクリーンアップ時に音楽を停止
+      }
+    };
+  }, [normalMusic]);
+
+  // 戦闘が始まるときに音楽を切り替え
+  useEffect(() => {
+    if (isBattlePopupVisible) {
+      if (normalMusic) normalMusic.pause(); // 通常の音楽を停止
+      if (battleMusic) {
+        battleMusic.loop = true; // 戦闘音楽をループ
+        battleMusic.volume = 0.3;
+        battleMusic
+          .play()
+          .catch((err) => console.error("Error playing battle music:", err)); // エラーキャッチ
+      }
+    } else {
+      if (battleMusic) battleMusic.pause(); // 戦闘音楽を停止
+      if (normalMusic)
+        normalMusic
+          .play()
+          .catch((err) => console.error("Error playing normal music:", err)); // エラーキャッチ
+    }
+
+    return () => {
+      if (battleMusic) battleMusic.pause(); // コンポーネント終了時に戦闘音楽を停止
+      if (normalMusic) normalMusic.pause(); // 通常音楽も停止
+    };
+  }, [isBattlePopupVisible, normalMusic, battleMusic]);
+
   const enemies: Enemy[] = useMemo(
     () => [
       {
@@ -94,6 +149,9 @@ const Game = () => {
 
   const handleAttack = () => {
     if (currentEnemy && isPlayerTurn) {
+      swordSound
+        .play()
+        .catch((err) => console.error("Error playing sword sound:", err)); // エラーキャッチ
       const newHp = currentEnemy.hp - 6;
       if (newHp <= 0) {
         setCurrentEnemy({ ...currentEnemy, hp: 0 });
