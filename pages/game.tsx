@@ -62,6 +62,24 @@ const Game = () => {
   const [enemyAttackSound, setEnemyAttackSound] =
     useState<HTMLAudioElement | null>(null); // 敵の攻撃音
 
+  const [direction, setDirection] = useState("down"); // プレイヤーの向き
+  const [animationFrame, setAnimationFrame] = useState(0); // 画像を切り替えるためのフレーム
+
+  const playerImages = {
+    up: ["/images/player/player_up_1.png", "/images/player/player_up_2.png"],
+    down: [
+      "/images/player/player_down_1.png",
+      "/images/player/player_down_2.png",
+    ],
+    left: [
+      "/images/player/player_left_1.png",
+      "/images/player/player_left_2.png",
+    ],
+    right: [
+      "/images/player/player_right_1.png",
+      "/images/player/player_right_2.png",
+    ],
+  };
   useEffect(() => {
     if (typeof window !== "undefined") {
       // クライアントサイドでのみAudioを初期化
@@ -72,6 +90,14 @@ const Game = () => {
       setVictorySound(new Audio("/sounds/victorySound.mp3")); // 勝利時の音を初期化
       setEnemyAttackSound(new Audio("/sounds/enemyAttack.mp3"));
     }
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setAnimationFrame((prevFrame) => (prevFrame === 0 ? 1 : 0)); // フレームを切り替える
+    }, 600); // 1秒ごとに切り替え
+
+    return () => clearInterval(interval); // クリーンアップ
   }, []);
 
   // 通常音楽の再生を開始
@@ -166,32 +192,40 @@ const Game = () => {
               prev.y > 0 &&
               !isTreePosition(prev.x, prev.y - 1, treePositions) &&
               !isWaterPosition(prev.x, prev.y - 1, waterPositions)
-            )
+            ) {
               newPos.y -= 1;
+              setDirection("up"); // 上向きに変更
+            }
             break;
           case "ArrowDown":
             if (
               prev.y < 19 &&
               !isTreePosition(prev.x, prev.y + 1, treePositions) &&
               !isWaterPosition(prev.x, prev.y + 1, waterPositions)
-            )
+            ) {
               newPos.y += 1;
+              setDirection("down"); // 下向きに変更
+            }
             break;
           case "ArrowLeft":
             if (
               prev.x > 0 &&
               !isTreePosition(prev.x - 1, prev.y, treePositions) &&
               !isWaterPosition(prev.x - 1, prev.y, waterPositions)
-            )
+            ) {
               newPos.x -= 1;
+              setDirection("left"); // 左向きに変更
+            }
             break;
           case "ArrowRight":
             if (
               prev.x < 19 &&
               !isTreePosition(prev.x + 1, prev.y, treePositions) &&
               !isWaterPosition(prev.x + 1, prev.y, waterPositions)
-            )
+            ) {
               newPos.x += 1;
+              setDirection("right"); // 右向きに変更
+            }
             break;
           default:
             break;
@@ -259,14 +293,22 @@ const Game = () => {
               style={{
                 width: 32,
                 height: 32,
-                backgroundColor: isPlayer ? "blue" : "green",
+                backgroundColor: "green",
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
                 boxSizing: "border-box",
               }}
             >
-              {isPlayer && <span style={{ color: "white" }}>P</span>}
+              {isPlayer && (
+                <Image
+                  src={playerImages[direction][animationFrame]} // 向きとアニメーションフレームに応じて画像を切り替える
+                  width={100}
+                  height={100}
+                  alt="Player"
+                  style={{ width: "100%", height: "100%" }}
+                />
+              )}
               {isTree && (
                 <Image
                   src="/images/tree.png"
