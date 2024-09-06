@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import BattlePopup from "./components/BattlePopup";
 import VictoryPopup from "./components/VictoryPopup";
 import {
   isTreePosition,
   isWaterPosition,
-  useHerb,
+  handleUseHerb,
 } from "./utils/gameFunctions";
 import Image from "next/image";
 
@@ -37,26 +37,35 @@ const Game = () => {
   const [enemyAttackMessage, setEnemyAttackMessage] = useState("");
   const [herbMessage, setHerbMessage] = useState(""); // やくそうを入手したメッセージ
 
-  const enemies: Enemy[] = [
-    {
-      name: "enemy1",
-      image: "/images/enemy1.png",
-      hp: 10,
-      attackRange: [1, 3],
-    },
-    {
-      name: "enemy2",
-      image: "/images/enemy2.png",
-      hp: 15,
-      attackRange: [4, 6],
-    },
-    {
-      name: "enemy3",
-      image: "/images/enemy3.png",
-      hp: 20,
-      attackRange: [7, 9],
-    },
-  ];
+  const enemies: Enemy[] = useMemo(
+    () => [
+      {
+        name: "enemy1",
+        image: "/images/enemy1.png",
+        hp: 10,
+        attackRange: [1, 3],
+      },
+      {
+        name: "enemy2",
+        image: "/images/enemy2.png",
+        hp: 15,
+        attackRange: [4, 6],
+      },
+      {
+        name: "enemy3",
+        image: "/images/enemy3.png",
+        hp: 20,
+        attackRange: [7, 9],
+      },
+    ],
+    []
+  );
+  type Enemy = {
+    name: string;
+    image: string;
+    hp: number;
+    attackRange: [number, number];
+  };
 
   // やくそう入手の処理
   const attemptHerbDrop = () => {
@@ -118,53 +127,56 @@ const Game = () => {
     }
   };
 
-  const handleKeyPress = (e: KeyboardEvent) => {
-    if (isBattlePopupVisible) return;
+  const handleKeyPress = useCallback(
+    (e: KeyboardEvent) => {
+      if (isBattlePopupVisible) return;
 
-    setPlayerPosition((prev) => {
-      let newPos = { ...prev };
+      setPlayerPosition((prev) => {
+        let newPos = { ...prev };
 
-      switch (e.key) {
-        case "ArrowUp":
-          if (
-            prev.y > 0 &&
-            !isTreePosition(prev.x, prev.y - 1, treePositions) &&
-            !isWaterPosition(prev.x, prev.y - 1, waterPositions)
-          )
-            newPos.y -= 1;
-          break;
-        case "ArrowDown":
-          if (
-            prev.y < 19 &&
-            !isTreePosition(prev.x, prev.y + 1, treePositions) &&
-            !isWaterPosition(prev.x, prev.y + 1, waterPositions)
-          )
-            newPos.y += 1;
-          break;
-        case "ArrowLeft":
-          if (
-            prev.x > 0 &&
-            !isTreePosition(prev.x - 1, prev.y, treePositions) &&
-            !isWaterPosition(prev.x - 1, prev.y, waterPositions)
-          )
-            newPos.x -= 1;
-          break;
-        case "ArrowRight":
-          if (
-            prev.x < 19 &&
-            !isTreePosition(prev.x + 1, prev.y, treePositions) &&
-            !isWaterPosition(prev.x + 1, prev.y, waterPositions)
-          )
-            newPos.x += 1;
-          break;
-        default:
-          break;
-      }
-      return newPos;
-    });
+        switch (e.key) {
+          case "ArrowUp":
+            if (
+              prev.y > 0 &&
+              !isTreePosition(prev.x, prev.y - 1, treePositions) &&
+              !isWaterPosition(prev.x, prev.y - 1, waterPositions)
+            )
+              newPos.y -= 1;
+            break;
+          case "ArrowDown":
+            if (
+              prev.y < 19 &&
+              !isTreePosition(prev.x, prev.y + 1, treePositions) &&
+              !isWaterPosition(prev.x, prev.y + 1, waterPositions)
+            )
+              newPos.y += 1;
+            break;
+          case "ArrowLeft":
+            if (
+              prev.x > 0 &&
+              !isTreePosition(prev.x - 1, prev.y, treePositions) &&
+              !isWaterPosition(prev.x - 1, prev.y, waterPositions)
+            )
+              newPos.x -= 1;
+            break;
+          case "ArrowRight":
+            if (
+              prev.x < 19 &&
+              !isTreePosition(prev.x + 1, prev.y, treePositions) &&
+              !isWaterPosition(prev.x + 1, prev.y, waterPositions)
+            )
+              newPos.x += 1;
+            break;
+          default:
+            break;
+        }
+        return newPos;
+      });
 
-    setSteps((prevSteps) => prevSteps + 1);
-  };
+      setSteps((prevSteps) => prevSteps + 1);
+    },
+    [isBattlePopupVisible]
+  );
 
   useEffect(() => {
     if (!isBattlePopupVisible) {
@@ -175,7 +187,7 @@ const Game = () => {
     return () => {
       window.removeEventListener("keydown", handleKeyPress);
     };
-  }, [isBattlePopupVisible]);
+  }, [isBattlePopupVisible, handleKeyPress]);
 
   useEffect(() => {
     startRandomBattleSteps();
@@ -189,7 +201,7 @@ const Game = () => {
       setIsPlayerTurn(true);
       setEnemyAttackMessage("");
     }
-  }, [steps, nextBattleSteps]);
+  }, [steps, nextBattleSteps, enemies]);
 
   return (
     <div style={{ textAlign: "center" }}>
@@ -261,14 +273,14 @@ const Game = () => {
           enemyAttackMessage={enemyAttackMessage}
           herbCount={herbCount}
           onUseHerb={() =>
-            useHerb(
+            handleUseHerb(
               herbCount,
               playerHp,
               setPlayerHp,
               setHerbCount,
               setEnemyAttackMessage
             )
-          }
+          } // useHerbは通常の関数として使用
           playerHp={playerHp}
         />
       )}

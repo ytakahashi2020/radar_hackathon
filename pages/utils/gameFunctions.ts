@@ -16,16 +16,18 @@ export const isWaterPosition = (
 };
 
 // やくそうを使う処理
-export const useHerb = (
+export const handleUseHerb = (
   herbCount: number,
   playerHp: number,
-  setPlayerHp: (hp: number) => void,
-  setHerbCount: (count: number) => void,
+  setPlayerHp: (hp: number | ((prevHp: number) => number)) => void, // 型を明示
+  setHerbCount: (count: number | ((prevCount: number) => number)) => void, // 同様に型を明示
   setEnemyAttackMessage: (message: string) => void
 ) => {
   if (herbCount > 0 && playerHp < 50) {
     const healAmount = Math.floor(Math.random() * 11) + 20; // 20~30回復
-    setPlayerHp((prevHp) => Math.min(prevHp + healAmount, 50)); // HPが50を超えないようにする
+    setPlayerHp((prevHp) => {
+      return Math.min(prevHp + healAmount, 50); // HPが50を超えないようにする
+    });
     setHerbCount((prev) => prev - 1); // やくそうの数を減らす
     setEnemyAttackMessage(`やくそうを使ってHPが${healAmount}回復した！`);
   }
