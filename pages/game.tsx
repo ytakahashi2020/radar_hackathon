@@ -6,6 +6,7 @@ import {
   isWaterPosition,
   useHerb,
 } from "./utils/gameFunctions";
+import Image from "next/image";
 
 // 木と水を配置する位置
 const treePositions = [
@@ -229,15 +230,19 @@ const Game = () => {
             >
               {isPlayer && <span style={{ color: "white" }}>P</span>}
               {isTree && (
-                <img
+                <Image
                   src="/images/tree.png"
+                  width={100} // 幅
+                  height={100}
                   alt="Tree"
                   style={{ width: "100%", height: "100%" }}
                 />
               )}
               {isWater && (
-                <img
+                <Image
                   src="/images/water.png"
+                  width={100} // 幅
+                  height={100}
                   alt="Water"
                   style={{ width: "100%", height: "100%" }}
                 />
